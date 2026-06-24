@@ -1,30 +1,52 @@
-# Tellofix XDCC Searcher
+# Tellofix XDCC Search API
 
-Self-hosted XDCC search engine built on Docker.
-Built with a little help from AI on a summer afternoon.
+Eine selbst gehostete XDCC-Suchmaschine als REST-API, verpackt in Docker.
 
-## Features
-- Local search in cached XDCC pack database
-- Live scraper via SunXDCC, xdcc.eu, xdcc.rocks
-- German / International language filter toggle
-- One-Click download command generator
-- Runs fully in Docker
+## Schnellstart
 
-## Quick Start
-1. Clone this repo
-2. Copy .env.example to .env and fill in your IRC credentials
-3. Run: docker compose up -d
-4. Open: http://localhost:9999
+### 1. Repository klonen
 
-## Test IRC Servers
-- irc.abjects.net port 6667 channel #BEAST-XDCC
-- irc.abjects.net port 6667 channels #moviegods AND #mg-chat (join both!)
-- irc.scenep2p.net port 6667 channel #THE.SOURCE
-- irc.rizon.net port 6697 channel #nibl
+    git clone https://github.com/fhu123/tellofix-xdcc.git
+    cd tellofix-xdcc
 
-## Security
-- Never commit your .env file - it contains credentials
-- .gitignore already excludes .env and mysql/
+### 2. Umgebungsvariablen konfigurieren
 
-## License
-MIT
+    cp .env.example .env
+    nano .env
+
+Trage deine eigenen Werte ein:
+
+    IRC_SERVER=irc.abjects.net
+    IRC_PORT=6667
+    IRC_NICKNAME=dein_nickname_hier
+    IRC_CHANNELS=#BEAST-XDCC
+
+    MYSQL_ROOT_PASSWORD=sicheresPasswort
+    MYSQL_DATABASE=xdcc_test
+    MYSQL_USER=xdcc
+    MYSQL_PASSWORD=sicheresPasswort
+
+    APP_PORT=8888
+
+Die MySQL-Datenbank wird beim ersten Start automatisch angelegt.
+
+### 3. Container starten
+
+    docker compose up -d
+
+### 4. API aufrufen
+
+    http://localhost:8888
+
+## Container verwalten
+
+    docker compose logs -f      # Logs anzeigen
+    docker compose down         # Stoppen
+    docker compose restart      # Neu starten
+    docker compose down -v      # Stoppen + DB loeschen
+
+## Sicherheitshinweise
+
+- .env niemals in Git eintragen (bereits in .gitignore)
+- Starke Passwoerter verwenden
+- API nicht ohne Authentifizierung ins Internet stellen
