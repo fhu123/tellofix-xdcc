@@ -1,4 +1,6 @@
-version: "3.8"
+networks:
+  xdcc-backend:
+    external: false
 
 services:
   db:
@@ -7,9 +9,9 @@ services:
     restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_DATABASE:      ${MYSQL_DATABASE}
+      MYSQL_USER:          ${MYSQL_USER}
+      MYSQL_PASSWORD:      ${MYSQL_PASSWORD}
     volumes:
       - ./mysql:/var/lib/mysql
     healthcheck:
@@ -17,6 +19,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - xdcc-backend
 
   search-api:
     image: python:3.11-slim
@@ -29,12 +33,39 @@ services:
     volumes:
       - ./search_api.py:/app/search_api.py
     environment:
-      MYSQL_HOST: db
+      MYSQL_HOST:     db
       MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_USER:     ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     ports:
-      - "${APP_PORT:-9999}:9999"
+      - "${APP_PORT:-8888}:9999"
     depends_on:
       db:
         condition: service_healthy
+    networks:
+      - xdcc-backend
+
+  irc-worker:
+    image: python:3.11-slim
+    container_name: tellofix-worker
+    restart: unless-stopped
+    working_dir: /app
+    command: >
+      sh -c "pip install pymysql --quiet &&
+             python irc_worker.py"
+    volumes:
+      - ./irc_worker.py:/app/irc_worker.py
+    environment:
+      MYSQL_HOST:     db
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER:     ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      IRC_SERVER:     ${IRC_SERVER}
+      IRC_PORT:       ${IRC_PORT}
+      IRC_NICKNAME:   ${IRC_NICKNAME}
+      IRC_CHANNELS:   ${IRC_CHANNELS}
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - xdcc-backend
